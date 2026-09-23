@@ -7,8 +7,8 @@
 
 name:Relatório de Bug
 description: Relate um bug ou problema com o Project NOMAD
-title: "[Bug]: "
-labels: ["bug", "needs-triage"]
+title:"[Bug]: "
+labels:["bug", "needs-triage"]
 body:
   - type: markdown
     attributes:
@@ -21,11 +21,11 @@ body:
         - Remova qualquer informação pessoal ou sensível dos logs/configurações
         - Não envie problemas relacionados à execução do NOMAD no Unraid ou em outro NAS - atualmente não temos planos de oferecer suporte a esse tipo de plataforma
 
-  - type: dropdown
-    id: issue-category
+  - type:dropdown
+    id:issue-category
     attributes:
-      label: Categoria do Problema
-      description: A qual área este problema está relacionado?
+      label:Categoria do Problema
+      description:A qual área este problema está relacionado?
       options:
         - Instalação/Configuração
         - Assistente de IA (Ollama)
@@ -38,61 +38,61 @@ body:
         - Problema na Interface/Frontend
         - Outro
     validations:
-      required: true
+      required:true
 
-  - type: textarea
-    id: description
+  - type:textarea
+    id:description
     attributes:
-      label: Descrição do Bug
-      description: Forneça uma descrição clara e concisa de qual é o bug
-      placeholder: O que aconteceu? O que você esperava que acontecesse?
+      label:Descrição do Bug
+      description:Forneça uma descrição clara e concisa de qual é o bug
+      placeholder:O que aconteceu? O que você esperava que acontecesse?
     validations:
-      required: true
+      required:true
 
-  - type: textarea
-    id: reproduction
+  - type:textarea
+    id:reproduction
     attributes:
-      label: Passos para Reproduzir
-      description: Como podemos reproduzir este problema?
-      placeholder: |
+      label:Passos para Reproduzir
+      description:Como podemos reproduzir este problema?
+      placeholder:|
         1. Acesse '...'
         2. Clique em '...'
         3. Veja o erro
     validations:
-      required: true
+      required:true
 
-  - type: textarea
-    id: expected-behavior
+  - type:textarea
+    id:expected-behavior
     attributes:
-      label: Comportamento Esperado
-      description: O que você esperava que acontecesse?
-      placeholder: Descreva qual deveria ser o resultado esperado
+      label:Comportamento Esperado
+      description:O que você esperava que acontecesse?
+      placeholder:Descreva qual deveria ser o resultado esperado
     validations:
-      required: true
+      required:true
 
-  - type: textarea
-    id: actual-behavior
+  - type:textarea
+    id:actual-behavior
     attributes:
-      label: Comportamento Atual
-      description: O que realmente aconteceu?
-      placeholder: Descreva o que realmente ocorreu, incluindo quaisquer mensagens de erro
+      label:Comportamento Atual
+      description:O que realmente aconteceu?
+      placeholder:Descreva o que realmente ocorreu, incluindo quaisquer mensagens de erro
     validations:
-      required: true
+      required:true
 
-  - type: input
-    id: nomad-version
+  - type:input
+    id:nomad-version
     attributes:
-      label: Versão do NOMAD
-      description: Qual versão do NOMAD você está executando? (Verifique em Configurações > Atualização ou execute `docker ps` e verifique a tag da imagem nomad_admin)
-      placeholder: "ex.: 1.29.0"
+      label:Versão do NOMAD
+      description:Qual versão do NOMAD você está executando? (Verifique em Configurações > Atualização ou execute `docker ps` e verifique a tag da imagem nomad_admin)
+      placeholder:"ex.: 1.29.0"
     validations:
-      required: true
+      required:true
 
-  - type: dropdown
-    id: os
+  - type:dropdown
+    id:os
     attributes:
-      label: Sistema Operacional
-      description: Em qual sistema operacional você está executando o NOMAD?
+      label:Sistema Operacional
+      description:Em qual sistema operacional você está executando o NOMAD?
       options:
         - Ubuntu 26.04 (Resolute Raccoon)
         - Ubuntu 24.04
@@ -104,98 +104,98 @@ body:
         - Outro baseado em Debian
         - Outro (ainda não oficialmente suportado)
     validations:
-      required: true
+      required:true
 
-  - type: input
-    id: docker-version
+  - type:input
+    id:docker-version
     attributes:
-      label: Versão do Docker
-      description: Qual versão do Docker você está executando? (`docker --version`)
-      placeholder: "ex.: Docker version 24.0.7"
+      label:Versão do Docker
+      description:Qual versão do Docker você está executando? (`docker --version`)
+      placeholder:"ex.: Docker version 24.0.7"
 
-  - type: dropdown
-    id: gpu-present
+  - type:dropdown
+    id:gpu-present
     attributes:
-      label: Você possui uma GPU dedicada?
+      label:Você possui uma GPU dedicada?
       options:
         - "Sim"
         - "Não"
         - "Não tenho certeza"
     validations:
-      required: true
+      required:true
 
-  - type: input
-    id: gpu-model
+  - type:input
+    id:gpu-model
     attributes:
-      label: Modelo da GPU (se aplicável)
-      description: Qual modelo de GPU você possui? (Verifique em Configurações > Sistema ou execute `nvidia-smi` caso tenha uma GPU NVIDIA)
-      placeholder: "ex.: NVIDIA GeForce RTX 3060"
+      label:Modelo da GPU (se aplicável)
+      description:Qual modelo de GPU você possui? (Verifique em Configurações > Sistema ou execute `nvidia-smi` caso tenha uma GPU NVIDIA)
+      placeholder:"ex.: NVIDIA GeForce RTX 3060"
 
-  - type: textarea
-    id: system-specs
+  - type:textarea
+    id:system-specs
     attributes:
-      label: Especificações do Sistema
-      description: Forneça as especificações relevantes do sistema (CPU, RAM, espaço disponível em disco)
-      placeholder: |
+      label:Especificações do Sistema
+      description:Forneça as especificações relevantes do sistema (CPU, RAM, espaço disponível em disco)
+      placeholder:|
         CPU: 
         RAM: 
         Espaço disponível em disco: 
         GPU (se houver): 
 
-  - type: textarea
-    id: service-status
+  - type:textarea
+    id:service-status
     attributes:
-      label: Status dos Serviços (se relevante)
-      description: Se este for um problema relacionado a um serviço, qual é o status dos serviços relevantes? (Verifique em Configurações > Aplicativos ou execute `docker ps`)
-      placeholder: |
+      label:Status dos Serviços (se relevante)
+      description:Se este for um problema relacionado a um serviço, qual é o status dos serviços relevantes? (Verifique em Configurações > Aplicativos ou execute `docker ps`)
+      placeholder:|
         Cole a saída de `docker ps` ou descreva o estado dos serviços pela interface
 
-  - type: textarea
-    id: logs
+  - type:textarea
+    id:logs
     attributes:
-      label: Logs Relevantes
-      description: |
+      label:Logs Relevantes
+      description:|
         Inclua quaisquer logs ou mensagens de erro relevantes. **Remova informações pessoais/sensíveis.**
         
         Comandos úteis para coletar logs:
         - Aplicativo de gerenciamento do NOMAD: `docker logs nomad_admin`
-        - Ollama: `docker logs nomad_ollama`
-        - Qdrant: `docker logs nomad_qdrant`
-        - Serviço específico: `docker logs nomad_<service-name>`
-      placeholder: Cole aqui a saída dos logs relevantes
-      render: shell
+        - Ollama:`docker logs nomad_ollama`
+        - Qdrant:`docker logs nomad_qdrant`
+        - Serviço específico:`docker logs nomad_<service-name>`
+      placeholder Cole aqui a saída dos logs relevantes
+      render:shell
 
-  - type: textarea
-    id: browser-console
+  - type:textarea
+    id:browser-console
     attributes:
-      label: Erros no Console do Navegador (se for um problema da interface)
-      description: Se este for um problema da interface, inclua quaisquer erros do console de desenvolvedor do navegador (F12)
-      placeholder: Cole aqui os erros do console do navegador
-      render: javascript
+      label:Erros no Console do Navegador (se for um problema da interface)
+      description:Se este for um problema da interface, inclua quaisquer erros do console de desenvolvedor do navegador (F12)
+      placeholder:Cole aqui os erros do console do navegador
+      render:javascript
 
-  - type: textarea
-    id: screenshots
+  - type:textarea
+    id:screenshots
     attributes:
-      label: Capturas de Tela
-      description: Se aplicável, adicione capturas de tela para ajudar a explicar o problema (arraste e solte as imagens aqui)
+      label:Capturas de Tela
+      description:Se aplicável, adicione capturas de tela para ajudar a explicar o problema (arraste e solte as imagens aqui)
 
-  - type: textarea
-    id: additional-context
+  - type:textarea
+    id:additional-context
     attributes:
-      label: Contexto Adicional
-      description: Adicione qualquer outro contexto sobre o problema aqui (configuração da rede, configurações personalizadas, alterações recentes etc.)
+      label:Contexto Adicional
+      description:Adicione qualquer outro contexto sobre o problema aqui (configuração da rede, configurações personalizadas, alterações recentes etc.)
 
-  - type: checkboxes
-    id: terms
+  - type:checkboxes
+    id:terms
     attributes:
-      label: Lista de Verificação Antes do Envio
-      description: Confirme os itens abaixo antes de enviar
+      label:Lista de Verificação Antes do Envio
+      description:Confirme os itens abaixo antes de enviar
       options:
-        - label: Pesquisei problemas existentes que possam estar relacionados a este bug
-          required: true
-        - label: Estou executando a versão mais recente do Project NOMAD (ou informei minha versão acima)
-          required: true
-        - label: Removi qualquer informação pessoal ou sensível dos logs e capturas de tela
-          required: true
-        - label: Este problema NÃO está relacionado à execução do NOMAD em um sistema operacional sem suporte/não baseado em Debian
-          required: false
+        - label:Pesquisei problemas existentes que possam estar relacionados a este bug
+          required:true
+        - label:Estou executando a versão mais recente do Project NOMAD (ou informei minha versão acima)
+          required:true
+        - label:Removi qualquer informação pessoal ou sensível dos logs e capturas de tela
+          required:true
+        - label:Este problema NÃO está relacionado à execução do NOMAD em um sistema operacional sem suporte/não baseado em Debian
+          required:false
