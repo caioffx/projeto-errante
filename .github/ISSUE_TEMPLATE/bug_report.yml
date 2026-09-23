@@ -5,7 +5,7 @@
   Alterações feitas para adicionar suporte a [tradução PTBR].
   
 
-name: Relatório de Bug
+name:Relatório de Bug
 description: Relate um bug ou problema com o Project NOMAD
 title: "[Bug]: "
 labels: ["bug", "needs-triage"]
