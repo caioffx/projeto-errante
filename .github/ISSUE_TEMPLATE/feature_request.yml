@@ -9,7 +9,7 @@
 name: Solicitação de Funcionalidade
 description: Sugira uma nova funcionalidade ou melhoria para o Project NOMAD
 title: "[Feature]: "
-labels: ["enhancement", "needs-discussion"]
+labels: ["melhoria, requer discussão"]
 body:
   - type: markdown
     attributes:
