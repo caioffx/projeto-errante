@@ -12,7 +12,7 @@ labels:["bug", "needs-triage"]
 body:
   - type:markdown
     attributes:
-      value: |
+      value:|
         Obrigado por reservar um tempo para relatar um bug! Preencha as informações abaixo para nos ajudar a diagnosticar e corrigir o problema.
         
         **Antes de enviar:**
