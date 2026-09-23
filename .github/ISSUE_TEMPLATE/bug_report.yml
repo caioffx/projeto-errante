@@ -6,7 +6,7 @@
   
 
 name:Relatório de Bug
-description: Relate um bug ou problema com o Project NOMAD
+description:Relate um bug ou problema com o Project NOMAD
 title:"[Bug]: "
 labels:["bug", "needs-triage"]
 body:
