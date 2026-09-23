@@ -7,10 +7,10 @@
 
 name:Relatório de Bug
 description:Relate um bug ou problema com o Project NOMAD
-title:"[Bug]: "
+title:"[Bug]:"
 labels:["bug", "needs-triage"]
 body:
-  - type: markdown
+  - type:markdown
     attributes:
       value: |
         Obrigado por reservar um tempo para relatar um bug! Preencha as informações abaixo para nos ajudar a diagnosticar e corrigir o problema.
