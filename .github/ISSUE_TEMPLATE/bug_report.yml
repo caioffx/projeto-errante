@@ -1,11 +1,9 @@
- * Copyright [2026] [Chris Sherwood]
- * 
- * Licensed under the Apache License, Version 2.0...
- * 
- * --- MODIFICAÇÕES ---
- * Modificado por [Miguel Forggia Ferreira] em [2026].
- * Alterações feitas para adicionar suporte a [tradução PTBR].
- */
+ Copyright [2026] [Chris Sherwood] 
+ Licensed under the Apache License, Version 2.0... 
+ MODIFICAÇÕES
+  Modificado por [Miguel Forggia Ferreira] em [2026].
+  Alterações feitas para adicionar suporte a [tradução PTBR].
+  
 
 name: Relatório de Bug
 description: Relate um bug ou problema com o Project NOMAD
