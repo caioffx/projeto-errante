@@ -1,10 +1,10 @@
- #Copyright [Ano] [Nome do Autor Original]
+ #Copyright [2025] [Chris Sherwood]
  # 
  # Licensed under the Apache License, Version 2.0...
  # 
  # --- MODIFICAÇÕES ---
- # Modificado por [Seu Nome ou Empresa] em [Ano].
- # Alterações feitas para adicionar suporte a [Funcionalidade X].
+ # Modificado por [Miguel Forggia Ferreira] em [2026].
+ # Alterações feitas para adicionar suporte a [Tradução PTBR].
  
 name: Relatório de Bug
 description: Relate um bug ou problema com o Project NOMAD
