@@ -1,17 +1,23 @@
-# About Project NOMAD
+ #Copyright [2025] [Chris Sherwood]
+ #Licensed under the Apache License, Version 2.0...
+ #--- MODIFICAÇÕES ---
+ #Modificado por [Miguel Forggia Ferreira] em [2026].
+ #Alterações feitas para adicionar suporte a [Tradução PTBR].
+ 
+# Sobre o Project NOMAD
 
-Project NOMAD ("NOMAD" for short) is a project started in 2025 by Chris Sherwood of [Crosstalk Solutions, LLC](https://crosstalksolutions.com). The goal of the project is not to create just another utility for storing offline resources, but rather to allow users to run their own ultimate "survival computer". The name started as a backronym, Node for Offline Maps, Archives, and Data, but these days we just call it NOMAD.
+ O Project NOMAD ("NOMAD", abreviadamente) é um projeto iniciado em 2025 por Chris Sherwood, da [Crosstalk Solutions, LLC](<https://crosstalksolutions.com>). O objetivo do projeto não é apenas criar mais um utilitário para armazenar recursos offline, mas permitir que os usuários tenham seu próprio "computador definitivo de sobrevivência". O nome começou como um acrônimo retroformado — _Node for Offline Maps, Archives, and Data_ (Nó para Mapas, Arquivos e Dados Offline) —, mas atualmente nós simplesmente o chamamos de NOMAD.
 
-While many similar offline survival computers are designed to be run on bare-minimum, lightweight hardware, Project NOMAD is quite the opposite. To install and run the available AI tools, we highly encourage the use of a beefy, GPU-backed device to make the most of your install. See the [Hardware Guide](https://www.projectnomad.us/hardware) for detailed build recommendations at three price points.
+ Embora muitos computadores de sobrevivência offline semelhantes sejam projetados para funcionar em hardware leve e com o mínimo necessário, o Project NOMAD segue exatamente na direção oposta. Para instalar e executar as ferramentas de IA disponíveis, recomendamos fortemente o uso de um dispositivo potente, equipado com GPU, para aproveitar ao máximo a instalação. Consulte o [Guia de Hardware](<https://www.projectnomad.us/hardware>) para obter recomendações detalhadas de configurações em três faixas de preço.
 
-Since its initial release, NOMAD has grown to include built-in AI chat with a Knowledge Base for document-aware responses, a System Benchmark with a community leaderboard, curated content collections with tiered options, and an Easy Setup Wizard to get new users up and running quickly.
+ Desde seu lançamento inicial, o NOMAD cresceu e passou a incluir um chat de IA integrado com uma Base de Conhecimento para fornecer respostas baseadas no conteúdo de documentos, um Benchmark do Sistema com um ranking da comunidade, coleções de conteúdo selecionadas com opções em diferentes níveis e um Assistente de Configuração Fácil para ajudar novos usuários a colocar o sistema em funcionamento rapidamente.
 
-Project NOMAD is open source, released under the [Apache License 2.0](https://github.com/Crosstalk-Solutions/project-nomad/blob/main/LICENSE).
+ O Project NOMAD é de código aberto e distribuído sob a [Licença Apache 2.0](<https://github.com/Crosstalk-Solutions/project-nomad/blob/main/LICENSE>).
 
-## Links
+ ## Links
 
-- **Website:** [www.projectnomad.us](https://www.projectnomad.us)
-- **Hardware Guide:** [www.projectnomad.us/hardware](https://www.projectnomad.us/hardware)
-- **Discord:** [Join the Community](https://discord.com/invite/crosstalksolutions)
-- **GitHub:** [Crosstalk-Solutions/project-nomad](https://github.com/Crosstalk-Solutions/project-nomad)
-- **Benchmark Leaderboard:** [benchmark.projectnomad.us](https://benchmark.projectnomad.us)
+ - **Site:** [www.projectnomad.us](<https://www.projectnomad.us>)
+- **Guia de Hardware:** [www.projectnomad.us/hardware](<https://www.projectnomad.us/hardware>)
+- **Discord:** [Entrar na comunidade](<https://discord.com/invite/crosstalksolutions>)
+- **GitHub:** [Crosstalk-Solutions/project-nomad](<https://github.com/Crosstalk-Solutions/project-nomad>)
+- **Ranking do Benchmark:** [benchmark.projectnomad.us](<https://benchmark.projectnomad.us>)
