@@ -1,0 +1,94 @@
+name: project-nomad-dev
+
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: nomad_admin_dev
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    volumes:
+      # Sincroniza em tempo real as mudanças no código com o container:
+      - ./admin:/app
+      # Volume anônimo para manter o node_modules compilado para Linux sem ser sobrescrito pelo host:
+      - /app/node_modules
+      # Acesso aos metadados e coleções de dados:
+      - ./collections:/collections:ro
+      - ./install/calibre-empty-library/metadata.db:/app/assets/calibre/metadata.db:ro
+      - ./install/entrypoint.dev.sh:/usr/local/bin/entrypoint.dev.sh:ro
+      # Permite gerenciar containers de serviços filhos (Ollama, Kiwix, etc.):
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Armazenamento persistente de desenvolvimento:
+      - nomad_dev_storage:/app/storage
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - HOST=0.0.0.0
+      - URL=http://localhost:8080
+      - APP_KEY=dev_secret_key_32_characters_long_1234
+      - LOG_LEVEL=info
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=nomad
+      - DB_USER=nomad_user
+      - DB_PASSWORD=nomad_dev_secret
+      - DB_SSL=false
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NOMAD_STORAGE_PATH=/app/storage
+      - DISABLE_COMPRESSION=false
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    container_name: nomad_mysql_dev
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=nomad_dev_secret
+      - MYSQL_DATABASE=nomad
+      - MYSQL_USER=nomad_user
+      - MYSQL_PASSWORD=nomad_dev_secret
+    volumes:
+      - nomad_dev_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: nomad_redis_dev
+    restart: unless-stopped
+    volumes:
+      - nomad_dev_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  dozzle:
+    image: amir20/dozzle:v10.0
+    container_name: nomad_dozzle_dev
+    restart: unless-stopped
+    ports:
+      - "9999:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_ENABLE_ACTIONS=false
+      - DOZZLE_ENABLE_SHELL=false
+
+volumes:
+  nomad_dev_storage:
+  nomad_dev_mysql:
+  nomad_dev_redis:

@@ -1,0 +1,24 @@
+{
+  "footer": {
+    "command_center": "Project NOMAD™ Centro de Comando v{{version}}",
+    "debug_info": "Informações de Depuração"
+  },
+  "language": {
+    "select": "Idioma",
+    "en": "English",
+    "pt-BR": "Português (BR)"
+  },
+  "theme": {
+    "day_ops": "Operações Diurnas",
+    "night_ops": "Operações Noturnas",
+    "switch_to_day": "Alternar para Modo Diurno",
+    "switch_to_night": "Alternar para Modo Noturno"
+  },
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "back": "Voltar"
+  }
+}

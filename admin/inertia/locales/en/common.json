@@ -1,0 +1,24 @@
+{
+  "footer": {
+    "command_center": "Project NOMAD™ Command Center v{{version}}",
+    "debug_info": "Debug Info"
+  },
+  "language": {
+    "select": "Language",
+    "en": "English",
+    "pt-BR": "Português (BR)"
+  },
+  "theme": {
+    "day_ops": "Day Ops",
+    "night_ops": "Night Ops",
+    "switch_to_day": "Switch to Day Ops",
+    "switch_to_night": "Switch to Night Ops"
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back"
+  }
+}

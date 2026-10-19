@@ -114,31 +114,31 @@ Exemplos:
 **Tipo**: Technical Story
 
 #### Tasks:
-- [ ] Instalar `react-i18next`, `i18next` e `i18next-browser-languagedetector` via npm
-- [ ] Criar arquivo de configuração `admin/inertia/lib/i18n.ts` com:  
+- [x] Instalar `react-i18next`, `i18next` e `i18next-browser-languagedetector` via npm
+- [x] Criar arquivo de configuração `admin/inertia/lib/i18n.ts` com:  
   - Inicialização do i18next
   - Plugin de detecção de idioma do navegador
   - Configuração de fallback language (`en`)
   - Registro de namespaces padrão (`common`)
   - Interpolação com escape padrão
-- [ ] Importar `i18n.ts` no entry point [`admin/inertia/app/app.tsx`](file:///c:/Users/caiof/Documents/GitHub/projeto-errante/projeto-errante-main/admin/inertia/app/app.tsx)
+- [x] Importar `i18n.ts` no entry point [`admin/inertia/app/app.tsx`](file:///c:/Users/caiof/Documents/GitHub/projeto-errante/projeto-errante-main/admin/inertia/app/app.tsx)
 
 ### Story 1.1.2: Criar a estrutura de pastas e arquivos de tradução
 **Tipo**: Technical Story
 
 #### Tasks:
-- [ ] Criar diretório `admin/inertia/locales/en/`
-- [ ] Criar arquivo `common.json` com estrutura inicial (botões, labels genéricos, navegação)
-- [ ] Criar arquivos JSON vazios (scaffolding) para cada namespace: `home`, `settings`, `chat`, `supply_depot`, `maps`, `drug_reference`, `easy_setup`, `benchmark`, `content`, `updates`, `errors`, `docs`
-- [ ] Criar diretório `admin/inertia/locales/pt-BR/` com os mesmos arquivos (vazios, prontos para a equipe de tradução)
+- [x] Criar diretório `admin/inertia/locales/en/`
+- [x] Criar arquivo `common.json` com estrutura inicial (botões, labels genéricos, navegação)
+- [x] Criar arquivos JSON vazios (scaffolding) para cada namespace: `home`, `settings`, `chat`, `supply_depot`, `maps`, `drug_reference`, `easy_setup`, `benchmark`, `content`, `updates`, `errors`, `docs`
+- [x] Criar diretório `admin/inertia/locales/pt-BR/` com os mesmos arquivos (vazios, prontos para a equipe de tradução)
 
 ### Story 1.1.3: Integrar i18next no pipeline de providers React
 **Tipo**: Technical Story
 
 #### Tasks:
-- [ ] Envolver a árvore de componentes com `I18nextProvider` em [`app.tsx`](file:///c:/Users/caiof/Documents/GitHub/projeto-errante/projeto-errante-main/admin/inertia/app/app.tsx)
+- [x] Envolver a árvore de componentes com `I18nextProvider` ou inicialização em [`app.tsx`](file:///c:/Users/caiof/Documents/GitHub/projeto-errante/projeto-errante-main/admin/inertia/app/app.tsx)
 - [ ] Criar hook utilitário `useTranslation` re-exportado (wrapper fino para manter imports consistentes)
-- [ ] Criar componente `LanguageSwitcher` básico (toggle `en`/`pt-BR`) — pode ficar oculto na UI, mas funcional para testes
+- [x] Criar componente `LanguageSwitcher` básico (toggle `en`/`pt-BR`) — funcional para testes na UI
 
 ---
 
@@ -148,7 +148,7 @@ Exemplos:
 **Tipo**: Technical Story
 
 #### Tasks:
-- [ ] Adicionar script npm `i18n:check` que valida se todas as chaves em `en/*.json` existem em `pt-BR/*.json` (script Node simples)
+- [x] Adicionar script npm `i18n:check` que valida se todas as chaves em `en/*.json` existem em `pt-BR/*.json` (script Node simples)
 - [ ] Documentar no README ou em `docs/i18n-guide.md`:
   - Como adicionar novas strings traduzíveis
   - Convenção de nomenclatura de chaves
@@ -159,11 +159,11 @@ Exemplos:
 **Tipo**: Technical Story
 
 #### Tasks:
-- [ ] Escolher um componente simples e isolado (ex: [`Footer.tsx`](file:///c:/Users/caiof/Documents/GitHub/projeto-errante/projeto-errante-main/admin/inertia/components/Footer.tsx)) como piloto
-- [ ] Extrair strings hardcoded para `common.json`
-- [ ] Substituir textos por chamadas `t('common:footer.project_name')`, etc.
-- [ ] Validar que a troca de idioma funciona corretamente no componente piloto
-- [ ] Documentar o padrão aplicado como referência para as próximas fases
+- [x] Escolher um componente simples e isolado (ex: [`Footer.tsx`](file:///c:/Users/caiof/Documents/GitHub/projeto-errante/projeto-errante-main/admin/inertia/components/Footer.tsx)) como piloto
+- [x] Extrair strings hardcoded para `common.json`
+- [x] Substituir textos por chamadas `t('footer.command_center')`, etc.
+- [x] Validar que a troca de idioma funciona corretamente no componente piloto
+- [x] Documentar o padrão aplicado como referência para as próximas fases
 
 ---
 

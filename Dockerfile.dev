@@ -1,0 +1,49 @@
+FROM node:22-slim
+
+# Install system packages required for Sharp, pdf2pic, and hardware utilities
+RUN apt-get update && apt-get install -y \
+      bash \
+      curl \
+      openssl \
+      graphicsmagick \
+      libvips-dev \
+      build-essential \
+      pciutils \
+      && rm -rf /var/lib/apt/lists/*
+
+# Install go-pmtiles (regional map extracts)
+ARG PMTILES_VERSION=1.30.2
+ARG PMTILES_SHA256_AMD64=2cd3aa18868297fc88425038f794efdc0995e0275f4ca16fa496dd79e245a40c
+ARG PMTILES_SHA256_ARM64=804cdf071834e1156af554c1a26cc42b56b9cde5a2db9c6e3653d16fb846d5fa
+RUN set -eux; \
+    ARCH="$(uname -m)"; \
+    case "${ARCH}" in \
+      x86_64) PMTILES_ARCH=x86_64; PMTILES_SHA256="${PMTILES_SHA256_AMD64}" ;; \
+      aarch64|arm64) PMTILES_ARCH=arm64;  PMTILES_SHA256="${PMTILES_SHA256_ARM64}" ;; \
+      *) echo "Unsupported arch: ${ARCH}" >&2; exit 1 ;; \
+    esac; \
+    TARBALL="go-pmtiles_${PMTILES_VERSION}_Linux_${PMTILES_ARCH}.tar.gz"; \
+    cd /tmp; \
+    curl -fsSL -o "$TARBALL" \
+      "https://github.com/protomaps/go-pmtiles/releases/download/v${PMTILES_VERSION}/${TARBALL}"; \
+    echo "${PMTILES_SHA256}  ${TARBALL}" | sha256sum -c -; \
+    tar -xzf "$TARBALL" -C /usr/local/bin pmtiles; \
+    rm -f "$TARBALL"; \
+    chmod +x /usr/local/bin/pmtiles; \
+    /usr/local/bin/pmtiles version
+
+WORKDIR /app
+
+# Pre-install dependencies inside image layer
+COPY admin/package.json admin/package-lock.json ./
+RUN npm ci
+
+# Copy dev entrypoint script
+COPY install/entrypoint.dev.sh /usr/local/bin/entrypoint.dev.sh
+RUN chmod +x /usr/local/bin/entrypoint.dev.sh
+
+ENV NODE_ENV=development
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.dev.sh"]
