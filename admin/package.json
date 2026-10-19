@@ -17,7 +17,8 @@
     "work:downloads": "node ace queue:work --queue=downloads",
     "work:model-downloads": "node ace queue:work --queue=model-downloads",
     "work:benchmarks": "node ace queue:work --queue=benchmarks",
-    "work:all": "node ace queue:work --all"
+    "work:all": "node ace queue:work --all",
+    "i18n:check": "node scripts/check-i18n.js"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
