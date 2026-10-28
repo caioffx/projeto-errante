@@ -3,12 +3,12 @@ import { defineConfig } from '@adonisjs/core/app'
 export default defineConfig({
   /*
   |--------------------------------------------------------------------------
-  | Experimental flags
+  | Recursos experimentais
   |--------------------------------------------------------------------------
   |
-  | The following features will be enabled by default in the next major release
-  | of AdonisJS. You can opt into them today to avoid any breaking changes
-  | during upgrade.
+  | Os recursos a seguir serão habilitados por padrão na próxima versão
+  | principal do AdonisJS. Você pode ativá-los desde já para evitar
+  | alterações incompatíveis durante a atualização.
   |
   */
   experimental: {
@@ -18,22 +18,23 @@ export default defineConfig({
 
   /*
   |--------------------------------------------------------------------------
-  | Commands
+  | Comandos
   |--------------------------------------------------------------------------
   |
-  | List of ace commands to register from packages. The application commands
-  | will be scanned automatically from the "./commands" directory.
+  | Lista de comandos do Ace a serem registrados a partir dos pacotes.
+  | Os comandos da aplicação serão detectados automaticamente no diretório
+  | "./commands".
   |
   */
   commands: [() => import('@adonisjs/core/commands'), () => import('@adonisjs/lucid/commands')],
 
   /*
   |--------------------------------------------------------------------------
-  | Service providers
+  | Provedores de serviços
   |--------------------------------------------------------------------------
   |
-  | List of service providers to import and register when booting the
-  | application
+  | Lista de provedores de serviços a serem importados e registrados durante
+  | a inicialização da aplicação.
   |
   */
   providers: [
@@ -62,21 +63,21 @@ export default defineConfig({
 
   /*
   |--------------------------------------------------------------------------
-  | Preloads
+  | Carregamento antecipado
   |--------------------------------------------------------------------------
   |
-  | List of modules to import before starting the application.
+  | Lista de módulos a serem importados antes de iniciar a aplicação.
   |
   */
   preloads: [() => import('#start/routes'), () => import('#start/kernel')],
 
   /*
   |--------------------------------------------------------------------------
-  | Tests
+  | Testes
   |--------------------------------------------------------------------------
   |
-  | List of test suites to organize tests by their type. Feel free to remove
-  | and add additional suites.
+  | Lista de conjuntos de testes organizados por tipo. Você pode remover
+  | ou adicionar conjuntos conforme necessário.
   |
   */
   tests: {
@@ -97,11 +98,11 @@ export default defineConfig({
 
   /*
   |--------------------------------------------------------------------------
-  | Metafiles
+  | Arquivos adicionais
   |--------------------------------------------------------------------------
   |
-  | A collection of files you want to copy to the build folder when creating
-  | the production build.
+  | Conjunto de arquivos que devem ser copiados para a pasta de compilação
+  | ao gerar a versão de produção.
   |
   */
   metaFiles: [
