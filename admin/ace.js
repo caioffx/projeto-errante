@@ -1,27 +1,27 @@
 /*
 |--------------------------------------------------------------------------
-| JavaScript entrypoint for running ace commands
+| Ponto de entrada JavaScript para executar comandos do Ace
 |--------------------------------------------------------------------------
 |
-| DO NOT MODIFY THIS FILE AS IT WILL BE OVERRIDDEN DURING THE BUILD
-| PROCESS.
+| NÃO MODIFIQUE ESTE ARQUIVO, POIS ELE SERÁ SOBRESCRITO DURANTE O
+| PROCESSO DE COMPILAÇÃO.
 |
-| See docs.adonisjs.com/guides/typescript-build-process#creating-production-build
+| Consulte docs.adonisjs.com/guides/typescript-build-process#creating-production-build
 |
-| Since, we cannot run TypeScript source code using "node" binary, we need
-| a JavaScript entrypoint to run ace commands.
+| Como não podemos executar código-fonte TypeScript usando o executável
+| "node", precisamos de um ponto de entrada JavaScript para executar os comandos do Ace.
 |
-| This file registers the "ts-node/esm" hook with the Node.js module system
-| and then imports the "bin/console.ts" file.
+| Este arquivo registra o hook "ts-node/esm" no sistema de módulos do Node.js
+| e, em seguida, importa o arquivo "bin/console.ts".
 |
 */
 
 /**
- * Register hook to process TypeScript files using ts-node-maintained
+ * Registra o hook para processar arquivos TypeScript usando o ts-node-maintained.
  */
 import 'ts-node-maintained/register/esm'
 
 /**
- * Import ace console entrypoint
+ * Importa o ponto de entrada do console do Ace.
  */
 await import('./bin/console.js')
