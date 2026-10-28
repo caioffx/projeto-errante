@@ -1,9 +1,9 @@
 /**
- * "When to use what" — pure, unit-testable helpers (Phase 1 + Phase 2).
+ * "Quando usar o quê" — funções auxiliares puras e testáveis por unidade (Fase 1 + Fase 2).
  *
- * NO Lucid / AdonisJS / HTTP imports. These take plain objects and return plain
- * objects so they run standalone under `node --experimental-strip-types` without
- * booting MySQL or Redis. Mirrors the `drug_labels.ts` helper convention.
+ * SEM imports de Lucid / AdonisJS / HTTP. Elas recebem objetos simples e retornam
+ * objetos simples, permitindo execução independente com `node --experimental-strip-types`
+ * sem inicializar o MySQL ou o Redis. Segue a convenção das funções auxiliares de `drug_labels.ts`.
  */
 
 import type {
@@ -16,19 +16,20 @@ import type {
 import type { DrugSearchResult } from '../types/drug_reference.js'
 
 /**
- * Canonical FDA product_type strings, mirrored from `PRODUCT_TYPES` in
- * types/drug_reference.ts. Inlined here (not imported) so this module stays a
- * pure, value-import-free helper runnable under `node --experimental-strip-types`
- * (which does not rewrite `.js` specifiers to `.ts` for runtime value imports).
- * The standalone test asserts these equal PRODUCT_TYPES.OTC / .RX, so they
- * cannot drift from the canonical source.
+ * Strings canônicas de product_type da FDA, espelhadas de `PRODUCT_TYPES` em
+ * types/drug_reference.ts. Definidas diretamente aqui (não importadas) para que
+ * este módulo continue sendo uma função auxiliar pura, sem imports de valores,
+ * executável com `node --experimental-strip-types` (que não reescreve especificadores
+ * `.js` para `.ts` em imports de valores usados em tempo de execução).
+ * O teste independente verifica se estes valores são iguais a PRODUCT_TYPES.OTC / .RX,
+ * impedindo que divirjam da fonte canônica.
  */
 export const OTC_PRODUCT_TYPE = 'HUMAN OTC DRUG'
 export const RX_PRODUCT_TYPE = 'HUMAN PRESCRIPTION DRUG'
 
-// ─── Spine parsing (fail-soft) ────────────────────────────────────────────────
+// ─── Análise da estrutura principal (falha controlada) ─────────────────────────
 
-/** Trim a value to a non-empty string, or return null. */
+/** Remove os espaços das extremidades de um valor e retorna uma string não vazia ou null. */
 function nonEmptyString(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
@@ -36,13 +37,13 @@ function nonEmptyString(value: unknown): string | null {
 }
 
 /**
- * Validate + coerce one raw condition entry into a typed Condition.
+ * Valida e converte uma entrada bruta de condição para o tipo Condition.
  *
- * Returns null when the entry is structurally unusable (missing slug/label/
- * category, or no usable searchTerms) so the caller can skip it rather than
- * surface a broken row. searchTerms are de-duped (case-insensitive) and
- * stripped of empties; an entry with zero usable terms is dropped (it could
- * never match anything).
+ * Retorna null quando a estrutura da entrada não pode ser usada (falta slug/label/
+ * category ou não há searchTerms utilizáveis), permitindo que quem chamou a função
+ * ignore a entrada em vez de exibir uma linha com erro. Os searchTerms têm duplicatas
+ * removidas (sem diferenciar maiúsculas de minúsculas) e valores vazios são eliminados;
+ * entradas sem nenhum termo utilizável são descartadas (pois nunca corresponderiam a nada).
  */
 export function parseConditionEntry(raw: unknown): Condition | null {
   if (typeof raw !== 'object' || raw === null) return null
@@ -70,13 +71,14 @@ export function parseConditionEntry(raw: unknown): Condition | null {
 }
 
 /**
- * Defensively parse a ConditionsFile-shaped object.
+ * Analisa defensivamente um objeto com a estrutura de ConditionsFile.
  *
- * A non-object, a missing/empty `conditions` array, or every entry being
- * malformed all yield an empty `conditions` list (with a best-effort version)
- * rather than throwing — the page then degrades to free-text-only search
- * instead of crashing. Duplicate slugs keep the FIRST occurrence (the curated
- * order is intentional).
+ * Se o valor não for um objeto, se o array `conditions` estiver ausente/vazio ou
+ * se todas as entradas estiverem malformadas, retorna uma lista `conditions` vazia
+ * (com uma versão obtida da melhor forma possível), em vez de lançar uma exceção.
+ * Assim, a página passa a oferecer apenas a busca por texto livre, em vez de falhar.
+ * Em caso de slugs duplicados, mantém a PRIMEIRA ocorrência (a ordem selecionada
+ * manualmente é intencional).
  */
 export function parseConditionsFile(json: unknown): ConditionsFile {
   if (typeof json !== 'object' || json === null) {
@@ -102,16 +104,16 @@ export function parseConditionsFile(json: unknown): ConditionsFile {
   return { version, conditions }
 }
 
-// ─── Lookup + projection ──────────────────────────────────────────────────────
+// ─── Busca + projeção ─────────────────────────────────────────────────────────
 
-/** Find a condition by its slug (exact match). Returns null when absent. */
+/** Encontra uma condição pelo slug (correspondência exata). Retorna null se não existir. */
 export function findConditionBySlug(conditions: Condition[], slug: string): Condition | null {
   const target = slug.trim()
   if (!target) return null
   return conditions.find((c) => c.slug === target) ?? null
 }
 
-/** Project a Condition to the client-facing summary (drops searchTerms). */
+/** Converte uma Condition em um resumo destinado ao cliente (remove searchTerms). */
 export function toConditionSummary(condition: Condition): ConditionSummary {
   return {
     slug: condition.slug,
@@ -120,19 +122,20 @@ export function toConditionSummary(condition: Condition): ConditionSummary {
   }
 }
 
-// ─── Reverse link: indications text → curated situations ──────────────────────
+// ─── Relação inversa: texto de indicações → situações selecionadas ────────────
 
 /**
- * The other direction of the symbiotic relationship: given a single drug's
- * indications-and-usage text, find which curated situations it treats.
+ * A outra direção dessa relação de mão dupla: dado o texto de indicações e uso
+ * de um medicamento, encontra quais situações selecionadas ele trata.
  *
- * A condition matches when ANY of its searchTerms appears as a case-insensitive
- * substring of the indications text. Substring (not word-boundary or FULLTEXT)
- * matching mirrors the FULLTEXT/LIKE intent of the forward search closely enough
- * for a "Commonly used for" affordance, while staying a pure string operation
- * with no DB. Curated order is preserved and results are deduped by slug.
+ * Uma condição corresponde quando QUALQUER um de seus searchTerms aparece como
+ * trecho de texto, sem diferenciar maiúsculas de minúsculas, no texto das indicações.
+ * A correspondência por trecho (e não por limite de palavra ou FULLTEXT) reproduz
+ * suficientemente a intenção da busca direta com FULLTEXT/LIKE para oferecer a opção
+ * "Comumente usado para", mantendo a operação como uma simples manipulação de strings,
+ * sem banco de dados. A ordem selecionada é preservada e os resultados são deduplicados por slug.
  *
- * Blank/empty input → [] (a label with no indications treats nothing here).
+ * Entrada em branco/vazia → [] (um rótulo sem indicações não corresponde a nenhuma situação aqui).
  */
 export function situationsForIndications(
   indicationsText: string | null | undefined,
@@ -158,24 +161,24 @@ export function situationsForIndications(
   return matched
 }
 
-// ─── FULLTEXT query construction ──────────────────────────────────────────────
+// ─── Construção da consulta FULLTEXT ──────────────────────────────────────────
 
 /**
- * Build a MySQL NATURAL LANGUAGE MODE query string from a condition's
- * searchTerms.
+ * Cria uma string de consulta do MySQL em NATURAL LANGUAGE MODE a partir dos
+ * searchTerms de uma condição.
  *
- * - Multi-word terms are wrapped in double quotes so they match as a phrase
- *   ("sore throat") rather than as two loose tokens — this trades a little
- *   recall for precision on multi-word conditions.
- * - Single-word terms are passed through bare.
- * - Internal double-quotes inside a term are stripped (they would break the
- *   phrase quoting).
- * - Terms are de-duped (case-insensitive) and empties dropped. An all-empty
- *   input yields '' so the caller can short-circuit to the LIKE fallback.
+ * - Termos com várias palavras são colocados entre aspas duplas para que sejam
+ *   encontrados como uma frase ("sore throat"), e não como dois tokens separados —
+ *   isso troca um pouco de abrangência por maior precisão em condições com várias palavras.
+ * - Termos com uma única palavra são passados sem aspas.
+ * - Aspas duplas internas a um termo são removidas (elas quebrariam as aspas da frase).
+ * - Termos duplicados são eliminados (sem diferenciar maiúsculas de minúsculas) e os
+ *   vazios são descartados. Se todos estiverem vazios, retorna '' para que quem chamou
+ *   a função possa recorrer diretamente à busca alternativa com LIKE.
  *
- * NATURAL LANGUAGE MODE treats the space-joined terms as an OR-ish relevance
- * query, which is what we want: any synonym can surface a matching label, ranked
- * by relevance.
+ * O NATURAL LANGUAGE MODE trata os termos unidos por espaços como uma consulta de
+ * relevância semelhante a um OU, que é o comportamento desejado: qualquer sinônimo
+ * pode revelar um rótulo correspondente, ordenado por relevância.
  */
 export function buildIndicationQuery(searchTerms: string[]): string {
   const seen = new Set<string>()
@@ -192,14 +195,15 @@ export function buildIndicationQuery(searchTerms: string[]): string {
   return parts.join(' ')
 }
 
-// ─── Natural remedies (Phase 2) — parsing + lookup ───────────────────────────
+// ─── Remédios naturais (Fase 2) — análise + busca ─────────────────────────────
 
 /**
- * Validate + coerce one raw remedy entry into a typed NaturalRemedy.
+ * Valida e converte uma entrada bruta de remédio para o tipo NaturalRemedy.
  *
- * Returns null when the entry is structurally unusable (missing required string
- * fields or conditions array) so the caller can skip it rather than surface a
- * broken row. Mirrors the defensive posture of parseConditionEntry.
+ * Retorna null quando a estrutura da entrada não pode ser usada (faltam campos de
+ * texto obrigatórios ou o array conditions), permitindo que quem chamou a função
+ * ignore a entrada em vez de exibir uma linha com erro. Segue a abordagem defensiva
+ * de parseConditionEntry.
  */
 export function parseRemedyEntry(raw: unknown): NaturalRemedy | null {
   if (typeof raw !== 'object' || raw === null) return null
@@ -226,10 +230,10 @@ export function parseRemedyEntry(raw: unknown): NaturalRemedy | null {
     const clean = nonEmptyString(c)
     if (clean) conditions.push(clean)
   }
-  // A remedy with no conditions never surfaces — drop it.
+  // Um remédio sem condições nunca será exibido — descarte-o.
   if (conditions.length === 0) return null
 
-  // Optional practical how-to (the offline-mission field) — carried when present.
+  // Instruções práticas opcionais (o campo voltado ao uso offline) — incluídas quando presentes.
   const how = nonEmptyString(r.how)
   return how
     ? { slug, name, commonNames, conditions, uses, how, evidence, cautions, sourceUrl }
@@ -237,12 +241,13 @@ export function parseRemedyEntry(raw: unknown): NaturalRemedy | null {
 }
 
 /**
- * Defensively parse a NaturalRemediesFile-shaped object.
+ * Analisa defensivamente um objeto com a estrutura de NaturalRemediesFile.
  *
- * A non-object, missing/empty `remedies` array, or all malformed entries yield
- * an empty `remedies` list (with a best-effort version) rather than throwing —
- * the UI degrades to "no natural remedies for this condition" instead of
- * crashing. Duplicate remedy slugs keep the FIRST occurrence.
+ * Se o valor não for um objeto, se o array `remedies` estiver ausente/vazio ou
+ * se todas as entradas estiverem malformadas, retorna uma lista `remedies` vazia
+ * (com uma versão obtida da melhor forma possível), em vez de lançar uma exceção.
+ * Assim, a interface informa que não há remédios naturais para essa condição, em vez
+ * de falhar. Em caso de slugs de remédios duplicados, mantém a PRIMEIRA ocorrência.
  */
 export function parseNaturalRemediesFile(json: unknown): NaturalRemediesFile {
   const empty: NaturalRemediesFile = {
@@ -281,11 +286,11 @@ export function parseNaturalRemediesFile(json: unknown): NaturalRemediesFile {
 }
 
 /**
- * Return all remedies whose `conditions` array includes the given slug.
+ * Retorna todos os remédios cujo array `conditions` contém o slug informado.
  *
- * Stable order (preserves the curated order of the remedies array). Pure O(remedies)
- * filter — no DB, no fuzzy matching. Returns [] when nothing matches or when file
- * has no remedies.
+ * A ordem é estável (preserva a ordem selecionada do array de remédios). Filtro puro
+ * O(remedies) — sem banco de dados e sem correspondência aproximada. Retorna [] quando
+ * nada corresponde ou quando o arquivo não contém remédios.
  */
 export function remediesForCondition(file: NaturalRemediesFile, slug: string): NaturalRemedy[] {
   const target = slug.trim()
@@ -294,10 +299,10 @@ export function remediesForCondition(file: NaturalRemediesFile, slug: string): N
 }
 
 /**
- * Short, display-friendly source attribution for a remedy — plain text, NOT a
- * link. NOMAD is offline-first: remedy cards carry everything needed to act and
- * never link out to the internet; this credit satisfies the public-domain
- * attribution without implying connectivity.
+ * Atribuição curta e adequada à exibição da fonte de um remédio — texto simples,
+ * NÃO um link. O NOMAD prioriza o uso offline: os cartões de remédios contêm tudo
+ * o que é necessário para agir e nunca direcionam para a internet; esse crédito
+ * atende à atribuição de domínio público sem sugerir que há conexão.
  */
 export function remedySourceName(remedy: { kind?: 'herb' | 'self-care'; sourceUrl: string }): string {
   if ((remedy.kind ?? 'herb') === 'herb') return 'NCCIH'
@@ -306,14 +311,16 @@ export function remedySourceName(remedy: { kind?: 'herb' | 'self-care'; sourceUr
   if (url.includes('fda.gov')) return 'FDA'
   if (url.includes('medlineplus.gov')) return 'MedlinePlus (NLM)'
   if (url.includes('nih.gov')) return 'NIH'
-  return 'US government source'
+  return 'Fonte do governo dos EUA'
 }
 
 /**
- * Return all remedies matching a free-text query as a secondary fallback.
+ * Retorna todos os remédios que correspondem a uma consulta de texto livre,
+ * como alternativa secundária.
  *
- * Case-insensitive substring match over `name` and `uses`. Used when a free-text
- * query does not resolve to a curated condition slug. Deduped by slug.
+ * Busca por trecho de texto, sem diferenciar maiúsculas de minúsculas, nos campos
+ * `name` e `uses`. É usada quando uma consulta de texto livre não corresponde a um
+ * slug de condição selecionada. Os resultados são deduplicados por slug.
  */
 export function remediesForFreeText(file: NaturalRemediesFile, query: string): NaturalRemedy[] {
   const q = query.trim().toLowerCase()
@@ -330,18 +337,19 @@ export function remediesForFreeText(file: NaturalRemediesFile, query: string): N
   return results
 }
 
-// ─── Result ordering ──────────────────────────────────────────────────────────
+// ─── Ordenação dos resultados ─────────────────────────────────────────────────
 
 /**
- * Stable-sort drug results OTC-first.
+ * Ordena os resultados de medicamentos de forma estável, priorizando os de venda livre (OTC).
  *
- * The condition browser is consumer-facing, so over-the-counter products are
- * the most actionable and lead. Order within each tier (OTC → other → Rx) is
- * preserved from the input (which the service already relevance-ranks), so this
- * only re-buckets by product_type without disturbing relevance order.
+ * A navegação por condições é voltada ao público geral, portanto os produtos vendidos
+ * sem receita são os mais acessíveis e aparecem primeiro. A ordem dentro de cada grupo
+ * (OTC → outros → Rx) é preservada conforme a entrada (que o serviço já ordena por
+ * relevância); assim, esta função apenas reorganiza os grupos por product_type, sem
+ * alterar a ordem de relevância.
  *
- * Bucketing: OTC = 0, anything not Rx-and-not-OTC = 1, Rx = 2. Returns a new
- * array; the input is not mutated.
+ * Agrupamento: OTC = 0, itens que não são nem Rx nem OTC = 1, Rx = 2. Retorna um novo
+ * array; a entrada não é modificada.
  */
 export function orderOtcFirst(drugs: DrugSearchResult[]): DrugSearchResult[] {
   const rank = (d: DrugSearchResult): number => {
