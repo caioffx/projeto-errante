@@ -8,11 +8,11 @@ export function isRawListRemoteZimFilesResponse(obj: any): obj is RawListRemoteZ
     return false
   }
   if (!('entry' in obj.feed)) {
-    return true // entry is optional and may be missing if there are no results
+    return true // entry é opcional e pode estar ausente quando não há resultados
   }
 
   if ('entry' in obj.feed && typeof obj.feed.entry !== 'object') {
-    return false // If entry exists, it must be an object or array
+    return false //  Se entry existir, deverá ser um objeto ou um array
   }
 
   return true
