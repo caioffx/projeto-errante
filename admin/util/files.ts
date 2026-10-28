@@ -3,8 +3,8 @@ import path from 'path';
 
 export async function chmodRecursive(
     dirPath: string,
-    dirPermissions = 0o755,  // rwxr-xr-x for directories
-    filePermissions = 0o644  // rw-r--r-- for files
+    dirPermissions = 0o755,  // rwxr-xr-x para diretórios
+    filePermissions = 0o644  // rw-r--r-- para arquivos
 ) {
     try {
         const stats = await fs.promises.stat(dirPath);
@@ -12,7 +12,7 @@ export async function chmodRecursive(
         if (stats.isDirectory()) {
             await fs.promises.chmod(dirPath, dirPermissions);
 
-            // Process directory contents
+            // Processa o conteúdo do diretório
             const items = await fs.promises.readdir(dirPath);
             for (const item of items) {
                 const itemPath = path.join(dirPath, item);
@@ -22,17 +22,16 @@ export async function chmodRecursive(
             await fs.promises.chmod(dirPath, filePermissions);
         }
     } catch (error) {
-        console.error(`Error setting permissions on ${dirPath}:`, error.message);
+        console.error(`Erro ao definir as permissões de ${dirPath}:`, error.message);
     }
 }
-
 
 export async function chownRecursive(targetPath: string, uid: number, gid: number) {
     try {
         const stats = await fs.promises.stat(targetPath);
 
         await fs.promises.chown(targetPath, uid, gid);
-        
+
         if (stats.isDirectory()) {
             const items = await fs.promises.readdir(targetPath);
             for (const item of items) {
@@ -40,6 +39,6 @@ export async function chownRecursive(targetPath: string, uid: number, gid: numbe
             }
         }
     } catch (error) {
-        console.error(`Error changing ownership on ${targetPath}:`, error.message);
+        console.error(`Erro ao alterar o proprietário de ${targetPath}:`, error.message);
     }
 }
