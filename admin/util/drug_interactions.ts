@@ -1,34 +1,38 @@
 /**
- * Parse a flattened FDA label section (drug interactions, dosage, warnings,
- * contraindications, indications, ...) into ordered blocks for readable
- * rendering. The split is purely structural: every word of the original text is
- * preserved in order — only the numbered-subsection and bullet markers move into
- * block metadata. No FDA wording is altered, summarized, or dropped. The
- * content-fidelity invariant is enforced by the unit tests.
+ * Analisa uma seção achatada de um rótulo da FDA (interações medicamentosas,
+ * dosagem, advertências, contraindicações, indicações etc.) e a divide em blocos
+ * ordenados para facilitar a leitura. A divisão é puramente estrutural: todas as
+ * palavras do texto original são preservadas na ordem — apenas os marcadores de
+ * subseções numeradas e de listas são movidos para os metadados dos blocos. Nenhum
+ * texto da FDA é alterado, resumido ou removido. Os testes unitários garantem
+ * o cumprimento dessa regra de fidelidade ao conteúdo.
  */
 
-/** One renderable block of parsed FDA label text. */
+/** Um bloco de texto do rótulo da FDA que pode ser renderizado. */
 export interface LabelBlock {
-  /** Subsection label like "7.1", or null for intro/header text. */
+  /** Identificador da subseção, como "7.1", ou null para o texto introdutório/cabeçalho. */
   label: string | null
-  /** Verbatim text (subsection label stripped from the front), or null for a bullet block. */
+  /** Texto literal (com o identificador da subseção removido do início), ou null para um bloco de lista. */
   text: string | null
-  /** Verbatim bullet items, or null for a text block. */
+  /** Itens literais da lista, ou null para um bloco de texto. */
   bullets: string[] | null
 }
 
-/** Backward-compatible alias — the interaction comparison view's original name. */
+/** Alias para manter a compatibilidade com versões anteriores — nome original da visualização de comparação de interações. */
 export type InteractionBlock = LabelBlock
 
-// A section's own leading header: a number then an ALL-CAPS section name, e.g.
-// "7 DRUG INTERACTIONS", "2 DOSAGE AND ADMINISTRATION". Anchoring subsection
-// detection to THIS section's number means inline cross-refs like "(12.3)" or
-// "( 7.1 )" are never mistaken for a subsection heading.
+// Cabeçalho inicial da própria seção: um número seguido de um nome de seção em
+// LETRAS MAIÚSCULAS, por exemplo, "7 DRUG INTERACTIONS" ou
+// "2 DOSAGE AND ADMINISTRATION". Restringir a detecção de subseções ao número
+// DESTA seção impede que referências cruzadas no texto, como "(12.3)" ou
+// "( 7.1 )", sejam confundidas com títulos de subseções.
 const HEADER_RE = /^\s*(\d{1,2})\s+[A-Z][A-Z][A-Z &,/()'.’-]*/
-// "<major>.<n> <Capital><lowercase>" subsection number, for the no-header fallback.
+
+// Número da subseção "<principal>.<n> <Maiúscula><minúscula>",
+// usado quando não há cabeçalho.
 const SUBSECTION_RE = /\b(\d{1,2})\.\d{1,2}\s+[A-Z][a-z]/g
 
-/** This section's major number — from its leading header, else the dominant subsection major. */
+/** Número principal desta seção — obtido do cabeçalho inicial ou, na ausência dele, do número principal de subseção mais frequente. */
 function detectMajor(text: string): string | null {
   const header = text.match(HEADER_RE)
   if (header) return header[1]
@@ -57,10 +61,11 @@ export function parseLabelSection(raw: string | null | undefined): LabelBlock[] 
   let pieces: string[]
   let labelRe: RegExp | null = null
   if (major) {
-    // Split before "<major>.<n> <Capital><lowercase>". The \b prevents matching
-    // inside a larger number (e.g. "17.1"); the [A-Z][a-z] requirement excludes
-    // parenthetical refs like "( 7.1 )" (those are followed by ")"). Lookahead
-    // only — no lookbehind — for broad browser support.
+    // Divide o texto antes de "<principal>.<n> <Maiúscula><minúscula>".
+    // O \b impede correspondências dentro de números maiores (por exemplo,
+    // "17.1"); o requisito [A-Z][a-z] exclui referências entre parênteses,
+    // como "( 7.1 )", pois elas são seguidas por ")". Usa apenas lookahead,
+    // sem lookbehind, para oferecer maior compatibilidade com navegadores.
     const splitRe = new RegExp(`(?=\\b${major}\\.\\d{1,2}\\s+[A-Z][a-z])`)
     pieces = text.split(splitRe)
     labelRe = new RegExp(`^(${major}\\.\\d{1,2})\\s+`)
@@ -104,13 +109,13 @@ export function parseLabelSection(raw: string | null | undefined): LabelBlock[] 
   return blocks
 }
 
-/** Backward-compatible alias for the interaction comparison view. */
+/** Alias para manter a compatibilidade com versões anteriores da visualização de comparação de interações. */
 export const parseInteractions = parseLabelSection
 
-/** True when a text block is just a "N SECTION NAME" FDA section header. */
+/** Retorna true quando um bloco de texto contém apenas um cabeçalho de seção da FDA no formato "N NOME DA SEÇÃO". */
 export function isLabelSectionHeader(text: string | null): boolean {
   return !!text && /^\s*\d{1,2}\s+[A-Z][A-Z][A-Z &,/()'.’-]*$/.test(text)
 }
 
-/** Backward-compatible alias. */
+/** Alias para manter a compatibilidade com versões anteriores. */
 export const isSectionHeader = isLabelSectionHeader
