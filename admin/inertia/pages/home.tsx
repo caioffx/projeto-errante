@@ -23,77 +23,7 @@ import api from '~/lib/api'
 import Alert from '~/components/Alert'
 import WhatsNewBanner from '~/components/WhatsNewBanner'
 import { SERVICE_NAMES } from '../../constants/service_names'
-
-// Maps is a Core Capability (display_order: 4)
-const MAPS_ITEM = {
-  label: 'Maps',
-  to: '/maps',
-  target: '',
-  description: 'View offline maps',
-  icon: <IconMapRoute size={48} />,
-  installed: true,
-  displayOrder: 4,
-  poweredBy: null,
-}
-
-// Drug Reference + "When to use what" — offline medical reference tiles.
-// icon and displayOrder here are a reasonable default; both are open for the
-// maintainer to re-pick to fit the dashboard's ordering conventions.
-const DRUG_REFERENCE_ITEM = {
-  label: 'Drug Reference',
-  to: '/drug-reference',
-  target: '',
-  description: 'Offline FDA drug labels — search by drug name, or by situation (burn, fever, diarrhea)',
-  icon: <IconPill size={48} />,
-  installed: true,
-  displayOrder: 5,
-  poweredBy: null,
-}
-
-// System items shown after all apps
-const SYSTEM_ITEMS = [
-  {
-    label: 'Easy Setup',
-    to: '/easy-setup',
-    target: '',
-    description:
-      'Not sure where to start? Use the setup wizard to quickly configure your NOMAD!',
-    icon: <IconBolt size={48} />,
-    installed: true,
-    displayOrder: 50,
-    poweredBy: null,
-  },
-  {
-    label: 'Supply Depot',
-    to: '/supply-depot',
-    target: '',
-    description: 'Browse and install curated apps, or add your own Docker container',
-    icon: <IconBox size={48} />,
-    installed: true,
-    displayOrder: 51,
-    poweredBy: null,
-  },
-  {
-    label: 'Docs',
-    to: '/docs/home',
-    target: '',
-    description: 'Read Project NOMAD manuals and guides',
-    icon: <IconHelp size={48} />,
-    installed: true,
-    displayOrder: 52,
-    poweredBy: null,
-  },
-  {
-    label: 'Settings',
-    to: '/settings/system',
-    target: '',
-    description: 'Configure your NOMAD settings',
-    icon: <IconSettings size={48} />,
-    installed: true,
-    displayOrder: 53,
-    poweredBy: null,
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 interface DashboardItem {
   label: string
@@ -115,8 +45,9 @@ export default function Home(props: {
   // below so they only appear once the data exists.
   drugReferenceInstalled: boolean
 }) {
+  const { t } = useTranslation('home')
   const items: DashboardItem[] = []
-  const updateInfo = useUpdateAvailable();
+  const updateInfo = useUpdateAvailable()
   const rerunBanner = useBenchmarkRerunBanner()
   const queryClient = useQueryClient()
   const { aiAssistantName } = usePage<{ aiAssistantName: string }>().props
@@ -128,9 +59,11 @@ export default function Home(props: {
 
   // Check if user has visited Easy Setup
   const { data: easySetupVisited } = useSystemSetting({
-    key: 'ui.hasVisitedEasySetup'
+    key: 'ui.hasVisitedEasySetup',
   })
-  const shouldHighlightEasySetup = easySetupVisited?.value ? String(easySetupVisited.value) !== 'true' : false
+  const shouldHighlightEasySetup = easySetupVisited?.value
+    ? String(easySetupVisited.value) !== 'true'
+    : false
 
   // Add installed services (non-dependency services only)
   props.system.services
@@ -138,7 +71,10 @@ export default function Home(props: {
     .forEach((service) => {
       items.push({
         // Inject custom AI Assistant name if this is the chat service
-        label: service.service_name === SERVICE_NAMES.OLLAMA && aiAssistantName ? aiAssistantName : (service.friendly_name || service.service_name),
+        label:
+          service.service_name === SERVICE_NAMES.OLLAMA && aiAssistantName
+            ? aiAssistantName
+            : service.friendly_name || service.service_name,
         to:
           service.ui_location || service.custom_url
             ? getServiceLink(service.ui_location || '', service.custom_url)
@@ -146,7 +82,9 @@ export default function Home(props: {
         target: '_blank',
         description:
           service.description ||
-          `Access the ${service.friendly_name || service.service_name} application`,
+          t('service_access_fallback', {
+            name: service.friendly_name || service.service_name,
+          }),
         icon: service.icon ? (
           <DynamicIcon icon={service.icon as DynamicIconName} className="!size-12" />
         ) : (
@@ -158,68 +96,123 @@ export default function Home(props: {
       })
     })
 
-  // Add Maps as a Core Capability
-  items.push(MAPS_ITEM)
+  // Add Maps as a Core Capability (display_order: 4)
+  items.push({
+    label: t('system_items.maps.label'),
+    to: '/maps',
+    target: '',
+    description: t('system_items.maps.description'),
+    icon: <IconMapRoute size={48} />,
+    installed: true,
+    displayOrder: 4,
+    poweredBy: null,
+  })
 
   // Add the offline medical-reference tiles only once the FDA drug dataset is
   // installed (or installing) via the curated Medicine tier. Both tiles read the
   // same drug_labels table, so they gate together off one server-computed flag.
   if (props.drugReferenceInstalled) {
-    items.push(DRUG_REFERENCE_ITEM)
+    items.push({
+      label: t('system_items.drug_reference.label'),
+      to: '/drug-reference',
+      target: '',
+      description: t('system_items.drug_reference.description'),
+      icon: <IconPill size={48} />,
+      installed: true,
+      displayOrder: 5,
+      poweredBy: null,
+    })
   }
 
   // Add system items
-  items.push(...SYSTEM_ITEMS)
+  items.push(
+    {
+      label: t('system_items.easy_setup.label'),
+      to: '/easy-setup',
+      target: '',
+      description: t('system_items.easy_setup.description'),
+      icon: <IconBolt size={48} />,
+      installed: true,
+      displayOrder: 50,
+      poweredBy: null,
+    },
+    {
+      label: t('system_items.supply_depot.label'),
+      to: '/supply-depot',
+      target: '',
+      description: t('system_items.supply_depot.description'),
+      icon: <IconBox size={48} />,
+      installed: true,
+      displayOrder: 51,
+      poweredBy: null,
+    },
+    {
+      label: t('system_items.docs.label'),
+      to: '/docs/home',
+      target: '',
+      description: t('system_items.docs.description'),
+      icon: <IconHelp size={48} />,
+      installed: true,
+      displayOrder: 52,
+      poweredBy: null,
+    },
+    {
+      label: t('system_items.settings.label'),
+      to: '/settings/system',
+      target: '',
+      description: t('system_items.settings.description'),
+      icon: <IconSettings size={48} />,
+      installed: true,
+      displayOrder: 53,
+      poweredBy: null,
+    }
+  )
 
   // Sort all items by display order
   items.sort((a, b) => a.displayOrder - b.displayOrder)
 
   return (
     <AppLayout>
-      <Head title="Command Center" />
-      {
-        updateInfo?.updateAvailable && (
-          <div className='flex justify-center items-center p-4 w-full'>
-            <Alert
-              title="An update is available for Project NOMAD!"
-              type="info-inverted"
-              variant="solid"
-              className="w-full"
-              buttonProps={{
-                variant: 'primary',
-                children: 'Go to Settings',
-                icon: 'IconSettings',
-                onClick: () => router.visit('/settings/update'),
-              }}
-            />
-          </div>
-        )
-      }
+      <Head title={t('title')} />
+      {updateInfo?.updateAvailable && (
+        <div className="flex justify-center items-center p-4 w-full">
+          <Alert
+            title={t('alerts.update_available.title')}
+            type="info-inverted"
+            variant="solid"
+            className="w-full"
+            buttonProps={{
+              variant: 'primary',
+              children: t('alerts.update_available.button'),
+              icon: 'IconSettings',
+              onClick: () => router.visit('/settings/update'),
+            }}
+          />
+        </div>
+      )}
       <WhatsNewBanner />
-      {
-        rerunBanner?.show && (
-          <div className='flex justify-center items-center px-4 pt-4 w-full'>
-            <Alert
-              title="Your benchmark can be re-scored with Score v2"
-              message="We've upgraded the benchmark scoring system. Re-run your benchmark to get an updated Score v2 result on the community leaderboard."
-              type="info-inverted"
-              variant="solid"
-              className="w-full"
-              dismissible
-              onDismiss={handleDismissRerunBanner}
-              buttonProps={{
-                variant: 'primary',
-                children: 'Re-run benchmark',
-                icon: 'IconRefresh',
-                onClick: () => router.visit('/settings/benchmark'),
-              }}
-            />
-          </div>
-        )
-      }
+      {rerunBanner?.show && (
+        <div className="flex justify-center items-center px-4 pt-4 w-full">
+          <Alert
+            title={t('alerts.benchmark_rescore.title')}
+            message={t('alerts.benchmark_rescore.message')}
+            type="info-inverted"
+            variant="solid"
+            className="w-full"
+            dismissible
+            onDismiss={handleDismissRerunBanner}
+            buttonProps={{
+              variant: 'primary',
+              children: t('alerts.benchmark_rescore.button'),
+              icon: 'IconRefresh',
+              onClick: () => router.visit('/settings/benchmark'),
+            }}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {items.map((item) => {
-          const isEasySetup = item.label === 'Easy Setup'
+          const isEasySetup = item.to === '/easy-setup'
           const shouldHighlight = isEasySetup && shouldHighlightEasySetup
 
           const tileContent = (
@@ -231,13 +224,15 @@ export default function Home(props: {
                     style={{ animationDuration: '1.5s' }}
                   ></span>
                   <span className="relative inline-flex items-center rounded-full px-2.5 py-1 bg-desert-orange-light text-xs font-semibold text-white shadow-sm">
-                    Start here!
+                    {t('badges.start_here')}
                   </span>
                 </span>
               )}
               <div className="flex items-center justify-center mb-2">{item.icon}</div>
               <h3 className="font-bold text-2xl">{item.label}</h3>
-              {item.poweredBy && <p className="text-sm opacity-80">Powered by {item.poweredBy}</p>}
+              {item.poweredBy && (
+                <p className="text-sm opacity-80">{t('powered_by', { name: item.poweredBy })}</p>
+              )}
               <p className="xl:text-lg mt-2">{item.description}</p>
             </div>
           )
