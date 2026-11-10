@@ -1,0 +1,156 @@
+import { useMemo, useState } from 'react'
+import { Dialog, DialogBackdrop, DialogPanel, TransitionChild } from '@headlessui/react'
+import classNames from '~/lib/classNames'
+import { IconArrowLeft, IconBug } from '@tabler/icons-react'
+import { Link, usePage } from '@inertiajs/react'
+import { UsePageProps } from '../../types/system'
+import { IconMenu2, IconX } from '@tabler/icons-react'
+import ThemeToggle from '~/components/ThemeToggle'
+import LanguageSwitcher from '~/components/LanguageSwitcher'
+import DebugInfoModal from './DebugInfoModal'
+import { useTranslation } from 'react-i18next'
+
+type SidebarItem = {
+  name: string
+  href: string
+  icon?: React.ElementType
+  current: boolean
+  target?: string
+}
+
+interface StyledSidebarProps {
+  title: string
+  items: SidebarItem[]
+}
+
+const StyledSidebar: React.FC<StyledSidebarProps> = ({ title, items }) => {
+  const { t } = useTranslation('common')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [debugModalOpen, setDebugModalOpen] = useState(false)
+  const { appVersion } = usePage().props as unknown as UsePageProps
+
+  const currentPath = useMemo(() => {
+    if (typeof window === 'undefined') return ''
+    return window.location.pathname
+  }, [])
+
+  const ListItem = (item: SidebarItem) => {
+    const className = classNames(
+      item.current
+        ? 'bg-desert-green text-white'
+        : 'text-text-primary hover:bg-desert-green-light hover:text-white',
+      'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold'
+    )
+    const content = (
+      <>
+        {item.icon && <item.icon aria-hidden="true" className="size-6 shrink-0" />}
+        {item.name}
+      </>
+    )
+    return (
+      <li key={item.name}>
+        {item.target === '_blank' ? (
+          <a href={item.href} target="_blank" rel="noopener noreferrer" className={className}>
+            {content}
+          </a>
+        ) : (
+          <Link href={item.href} className={className}>
+            {content}
+          </Link>
+        )}
+      </li>
+    )
+  }
+
+  const Sidebar = () => {
+    return (
+      <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-desert-sand px-6 ring-1 ring-white/5 pt-4 shadow-md">
+        <div className="flex h-16 shrink-0 items-center">
+          <img src="/project_nomad_logo.webp" alt={t('logo_alt')} className="h-16 w-16" />
+          <h1 className="ml-3 text-xl font-semibold text-text-primary">{title}</h1>
+        </div>
+        <nav className="flex flex-1 flex-col">
+          <ul role="list" className="flex flex-1 flex-col gap-y-7">
+            <li>
+              <ul role="list" className="-mx-2 space-y-1">
+                {items.map((item) => (
+                  <ListItem key={item.name} {...item} current={currentPath === item.href} />
+                ))}
+                <li className="ml-2 mt-4">
+                  <Link
+                    href="/home"
+                    className="flex flex-row items-center gap-x-3 text-desert-green text-sm font-semibold"
+                  >
+                    <IconArrowLeft aria-hidden="true" className="size-6 shrink-0" />
+                    {t('navigation.back_to_home')}
+                  </Link>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+        <div className="mb-4 flex flex-col items-center gap-1 text-sm text-text-secondary text-center">
+          <p>{t('footer.command_center', { version: appVersion })}</p>
+          <button
+            onClick={() => setDebugModalOpen(true)}
+            className="text-gray-500 hover:text-desert-green inline-flex items-center gap-1 cursor-pointer"
+          >
+            <IconBug className="size-3.5" />
+            {t('footer.debug_info')}
+          </button>
+          <div className="flex items-center gap-2 mt-1">
+            <ThemeToggle />
+            <LanguageSwitcher />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="absolute left-4 top-4 z-50 xl:hidden"
+        onClick={() => setSidebarOpen(true)}
+      >
+        <IconMenu2 aria-hidden="true" className="size-8" />
+      </button>
+      {/* Mobile sidebar */}
+      <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 xl:hidden">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-black/10 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
+        />
+
+        <div className="fixed inset-0 flex">
+          <DialogPanel
+            transition
+            className="relative mr-16 flex w-full max-w-xs flex-1 transform transition duration-300 ease-in-out data-[closed]:-translate-x-full"
+          >
+            <TransitionChild>
+              <div className="absolute left-full top-0 flex w-16 justify-center pt-5 duration-300 ease-in-out data-[closed]:opacity-0">
+                <button
+                  type="button"
+                  onClick={() => setSidebarOpen(false)}
+                  className="-m-2.5 p-2.5"
+                >
+                  <span className="sr-only">{t('sidebar.close')}</span>
+                  <IconX aria-hidden="true" className="size-6 text-white" />
+                </button>
+              </div>
+            </TransitionChild>
+            <Sidebar />
+          </DialogPanel>
+        </div>
+      </Dialog>
+      {/* Desktop sidebar */}
+      <div className="hidden xl:fixed xl:inset-y-0 xl:z-50 xl:flex xl:w-72 xl:flex-col">
+        <Sidebar />
+      </div>
+      <DebugInfoModal open={debugModalOpen} onClose={() => setDebugModalOpen(false)} />
+    </>
+  )
+}
+
+export default StyledSidebar

@@ -3,7 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const localesDir = path.resolve(__dirname, '../inertia/locales')
+const targetDir = process.argv[2] ? path.resolve(process.cwd(), process.argv[2]) : path.resolve(__dirname, '../inertia/locales')
+const localesDir = targetDir
 const enDir = path.join(localesDir, 'en')
 const ptDir = path.join(localesDir, 'pt-BR')
 

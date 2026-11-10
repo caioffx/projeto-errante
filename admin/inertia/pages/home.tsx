@@ -26,10 +26,10 @@ import { SERVICE_NAMES } from '../../constants/service_names'
 
 // Maps is a Core Capability (display_order: 4)
 const MAPS_ITEM = {
-  label: 'Maps',
+  label: 'Mapas',
   to: '/maps',
   target: '',
-  description: 'View offline maps',
+  description: 'Ver mapas offiline',
   icon: <IconMapRoute size={48} />,
   installed: true,
   displayOrder: 4,

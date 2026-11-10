@@ -1,0 +1,44 @@
+{
+  "logo_alt": "Logotipo do Project NOMAD",
+  "loading": "Carregando...",
+  "navigation": {
+    "back_to_home": "Voltar para o Início",
+    "command_center": "Centro de Comando"
+  },
+  "sidebar": {
+    "close": "Fechar menu lateral"
+  },
+  "alert": {
+    "dismiss": "Dispensar alerta"
+  },
+  "debug_modal": {
+    "title": "Informações de Depuração",
+    "description": "Estas são informações não sensíveis do sistema que você pode compartilhar ao relatar problemas. Nenhuma senha, IP ou chave de API está incluída.",
+    "failed_to_load": "Falha ao carregar informações de depuração. Por favor, tente novamente.",
+    "open_github_issue": "Abrir chamado no GitHub"
+  },
+  "footer": {
+    "command_center": "Project NOMAD™ Centro de Comando v{{version}}",
+    "debug_info": "Informações de Depuração"
+  },
+  "language": {
+    "select": "Idioma",
+    "en": "English",
+    "pt-BR": "Português (BR)"
+  },
+  "theme": {
+    "day_ops": "Operações Diurnas",
+    "night_ops": "Operações Noturnas",
+    "switch_to_day": "Alternar para Modo Diurno",
+    "switch_to_night": "Alternar para Modo Noturno"
+  },
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "copy_to_clipboard": "Copiar para Área de Transferência",
+    "copied": "Copiado!"
+  }
+}
