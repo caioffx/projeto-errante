@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query'
 import api from '~/lib/api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 import StyledTable from '~/components/StyledTable'
 import SettingsLayout from '~/layouts/SettingsLayout'
 import { Head } from '@inertiajs/react'
@@ -54,6 +55,7 @@ type BrowseResult = {
 }
 
 export default function ZimRemoteExplorer() {
+  const { t, i18n } = useTranslation('content')
   const queryClient = useQueryClient()
   const tableParentRef = useRef<HTMLDivElement>(null)
 
@@ -66,15 +68,12 @@ export default function ZimRemoteExplorer() {
   const [query, setQuery] = useState('')
   const [queryUI, setQueryUI] = useState('')
 
-  // Category/tier selection state
   const [tierModalOpen, setTierModalOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<CategoryWithStatus | null>(null)
 
-  // Wikipedia selection state
   const [selectedWikipedia, setSelectedWikipedia] = useState<string | null>(null)
   const [isSubmittingWikipedia, setIsSubmittingWikipedia] = useState(false)
 
-  // Custom library state - persist selection to localStorage
   const [selectedSource, setSelectedSource] = useState<'default' | number>(() => {
     try {
       const saved = localStorage.getItem('nomad:zim-library-source')
@@ -92,14 +91,12 @@ export default function ZimRemoteExplorer() {
     setQuery(val)
   }, 400)
 
-  // Fetch curated categories with tiers
   const { data: categories } = useQuery({
     queryKey: [CURATED_CATEGORIES_KEY],
     queryFn: () => api.listCuratedCategories(),
     refetchOnWindowFocus: false,
   })
 
-  // Fetch Wikipedia options and state
   const { data: wikipediaState, isLoading: isLoadingWikipedia } = useQuery({
     queryKey: [WIKIPEDIA_STATE_KEY],
     queryFn: () => api.getWikipediaState(),
@@ -120,14 +117,12 @@ export default function ZimRemoteExplorer() {
     enabled: true,
   })
 
-  // Fetch custom libraries
   const { data: customLibraries } = useQuery({
     queryKey: [CUSTOM_LIBRARIES_KEY],
     queryFn: () => api.listCustomLibraries(),
     refetchOnWindowFocus: false,
   })
 
-  // Browse custom library directory
   const {
     data: browseData,
     isLoading: isBrowsing,
@@ -144,9 +139,6 @@ export default function ZimRemoteExplorer() {
     useInfiniteQuery<ListRemoteZimFilesResponse>({
       queryKey: ['remote-zim-files', query],
       queryFn: async ({ pageParam = 0 }) => {
-        // pageParam is an opaque Kiwix offset returned by the backend as `next_start`.
-        // The backend accumulates across multiple upstream pages when needed (#731), so the
-        // frontend can't derive the next offset from a 12-item page assumption.
         const start = typeof pageParam === 'number' ? pageParam : 0
         const res = await api.listRemoteZimFiles({ start, count: 12, query: query || undefined })
         if (!res) {
@@ -175,10 +167,6 @@ export default function ZimRemoteExplorer() {
   }, [data, downloads, localFiles])
   const hasMore = useMemo(() => data?.pages[data.pages.length - 1]?.has_more || false, [data])
 
-  // When a ZIM download drops off the polled downloads list it has completed (or been
-  // cancelled). The installed-files query (refetchOnWindowFocus is off) won't otherwise
-  // refresh, so a just-installed ZIM stays absent from `localFiles` and reappears in the
-  // accumulated remote pages as a ghost entry. Refresh it so the item is pruned.
   const prevDownloadKeysRef = useRef<Set<string>>(new Set())
   useEffect(() => {
     const currentKeys = new Set((downloads ?? []).map((d) => d.jobId))
@@ -199,10 +187,6 @@ export default function ZimRemoteExplorer() {
     (parentRef?: HTMLDivElement | null) => {
       if (parentRef) {
         const { scrollHeight, scrollTop, clientHeight } = parentRef
-        // Fetch more when near the bottom. The `flatData.length > 0` guard that used to be
-        // here caused the #731 deadlock when a heavily-saturated install returned an empty
-        // page with has_more=true — removing it lets the existing on-mount/on-data effect
-        // below drive bounded auto-fetch until hasMore flips false.
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && hasMore) {
           fetchNextPage()
         }
@@ -211,12 +195,10 @@ export default function ZimRemoteExplorer() {
     [fetchNextPage, isFetching, hasMore]
   )
 
-  //a check on mount and after a fetch to see if the table is already scrolled to the bottom and immediately needs to fetch more data
   useEffect(() => {
     fetchOnBottomReached(tableParentRef.current)
   }, [fetchOnBottomReached])
 
-  // Restore custom library selection on mount when data loads
   useEffect(() => {
     if (selectedSource !== 'default' && customLibraries) {
       const lib = customLibraries.find((l) => l.id === selectedSource)
@@ -224,14 +206,12 @@ export default function ZimRemoteExplorer() {
         setBrowseUrl(lib.base_url)
         setBreadcrumbs([{ name: lib.name, url: lib.base_url }])
       } else if (!lib) {
-        // Saved library was deleted
         setSelectedSource('default')
         localStorage.setItem('nomad:zim-library-source', 'default')
       }
     }
   }, [customLibraries, selectedSource])
 
-  // When selecting a custom library, navigate to its root
   const handleSourceChange = (value: string) => {
     localStorage.setItem('nomad:zim-library-source', value)
     if (value === 'default') {
@@ -263,22 +243,24 @@ export default function ZimRemoteExplorer() {
   async function confirmDownload(record: RemoteZimFileEntry) {
     openModal(
       <StyledModal
-        title="Confirm Download?"
+        title={t('explorer.confirm_download_title')}
         onConfirm={() => {
           downloadFile(record)
           closeAllModals()
         }}
         onCancel={closeAllModals}
         open={true}
-        confirmText="Download"
-        cancelText="Cancel"
+        confirmText={t('common:buttons.confirm', { defaultValue: 'Download' })}
+        cancelText={t('common:buttons.cancel', { defaultValue: 'Cancel' })}
         confirmVariant="primary"
       >
         <p className="text-text-primary">
-          Are you sure you want to download{' '}
-          <strong>{record.title}</strong>? It may take some time for it
-          to be available depending on the file size and your internet connection. The Kiwix
-          application will be restarted after the download is complete.
+          <Trans
+            i18nKey="explorer.confirm_download_msg"
+            ns="content"
+            values={{ name: record.title, sizeClause: '' }}
+            components={[<strong />, <strong />]}
+          />
         </p>
       </StyledModal>,
       'confirm-download-file-modal'
@@ -288,22 +270,27 @@ export default function ZimRemoteExplorer() {
   async function confirmCustomDownload(file: { name: string; url: string; size_bytes: number | null }) {
     openModal(
       <StyledModal
-        title="Confirm Download?"
+        title={t('explorer.confirm_download_title')}
         onConfirm={() => {
           downloadCustomFile(file)
           closeAllModals()
         }}
         onCancel={closeAllModals}
         open={true}
-        confirmText="Download"
-        cancelText="Cancel"
+        confirmText={t('common:buttons.confirm', { defaultValue: 'Download' })}
+        cancelText={t('common:buttons.cancel', { defaultValue: 'Cancel' })}
         confirmVariant="primary"
       >
         <p className="text-text-primary">
-          Are you sure you want to download{' '}
-          <strong>{file.name}</strong>
-          {file.size_bytes ? ` (${formatBytes(file.size_bytes)})` : ''}? The Kiwix
-          application will be restarted after the download is complete.
+          <Trans
+            i18nKey="explorer.confirm_download_msg"
+            ns="content"
+            values={{
+              name: file.name,
+              sizeClause: file.size_bytes ? t('explorer.download_file_size', { size: formatBytes(file.size_bytes) }) : '',
+            }}
+            components={[<strong />, <strong />]}
+          />
         </p>
       </StyledModal>,
       'confirm-download-custom-modal'
@@ -331,20 +318,19 @@ export default function ZimRemoteExplorer() {
         size_bytes: file.size_bytes ?? undefined,
       })
       addNotification({
-        message: `Started downloading "${file.name}"`,
+        message: t('explorer.started_downloading', { name: file.name }),
         type: 'success',
       })
       invalidateDownloads()
     } catch (error) {
       console.error('Error downloading file:', error)
       addNotification({
-        message: 'Failed to start download.',
+        message: t('explorer.download_start_failed'),
         type: 'error',
       })
     }
   }
 
-  // Category/tier handlers
   const handleCategoryClick = (category: CategoryWithStatus) => {
     if (!isOnline) return
     setActiveCategory(category)
@@ -356,17 +342,15 @@ export default function ZimRemoteExplorer() {
       await api.downloadCategoryTier(category.slug, tier.slug)
 
       addNotification({
-        message: `Started downloading "${category.name} - ${tier.name}"`,
+        message: t('explorer.started_category_tier', { category: category.name, tier: tier.name }),
         type: 'success',
       })
       invalidateDownloads()
-
-      // Refresh categories to update the installed tier display
       queryClient.invalidateQueries({ queryKey: [CURATED_CATEGORIES_KEY] })
     } catch (error) {
       console.error('Error downloading tier resources:', error)
       addNotification({
-        message: 'An error occurred while starting downloads.',
+        message: t('explorer.tier_download_error'),
         type: 'error',
       })
     }
@@ -377,7 +361,6 @@ export default function ZimRemoteExplorer() {
     setActiveCategory(null)
   }
 
-  // Wikipedia selection handlers
   const handleWikipediaSelect = (optionId: string) => {
     if (!isOnline) return
     setSelectedWikipedia(optionId)
@@ -393,8 +376,8 @@ export default function ZimRemoteExplorer() {
         addNotification({
           message:
             selectedWikipedia === 'none'
-              ? 'Wikipedia removed successfully'
-              : 'Wikipedia download started',
+              ? t('explorer.wikipedia_removed')
+              : t('explorer.wikipedia_download_started'),
           type: 'success',
         })
         invalidateDownloads()
@@ -402,14 +385,14 @@ export default function ZimRemoteExplorer() {
         setSelectedWikipedia(null)
       } else {
         addNotification({
-          message: result?.message || 'Failed to change Wikipedia selection',
+          message: result?.message || t('explorer.wikipedia_change_failed'),
           type: 'error',
         })
       }
     } catch (error) {
       console.error('Error selecting Wikipedia:', error)
       addNotification({
-        message: 'An error occurred while changing Wikipedia selection',
+        message: t('explorer.wikipedia_error'),
         type: 'error',
       })
     } finally {
@@ -421,7 +404,7 @@ export default function ZimRemoteExplorer() {
     mutationFn: () => api.refreshManifests(),
     onSuccess: () => {
       addNotification({
-        message: 'Successfully refreshed content collections.',
+        message: t('explorer.manifests_refreshed'),
         type: 'success',
       })
       queryClient.invalidateQueries({ queryKey: [CURATED_CATEGORIES_KEY] })
@@ -429,24 +412,23 @@ export default function ZimRemoteExplorer() {
     },
   })
 
-  // Custom library management
   const addLibraryMutation = useMutation({
     mutationFn: () => api.addCustomLibrary(newLibraryName.trim(), newLibraryUrl.trim()),
     onSuccess: () => {
-      addNotification({ message: 'Custom library added.', type: 'success' })
+      addNotification({ message: t('explorer.custom_lib_added'), type: 'success' })
       queryClient.invalidateQueries({ queryKey: [CUSTOM_LIBRARIES_KEY] })
       setNewLibraryName('')
       setNewLibraryUrl('')
     },
     onError: () => {
-      addNotification({ message: 'Failed to add custom library.', type: 'error' })
+      addNotification({ message: t('explorer.custom_lib_add_failed'), type: 'error' })
     },
   })
 
   const removeLibraryMutation = useMutation({
     mutationFn: (id: number) => api.removeCustomLibrary(id),
     onSuccess: (_data, id) => {
-      addNotification({ message: 'Custom library removed.', type: 'success' })
+      addNotification({ message: t('explorer.custom_lib_removed'), type: 'success' })
       queryClient.invalidateQueries({ queryKey: [CUSTOM_LIBRARIES_KEY] })
       if (selectedSource === id) {
         setSelectedSource('default')
@@ -460,18 +442,18 @@ export default function ZimRemoteExplorer() {
 
   return (
     <SettingsLayout>
-      <Head title="Content Explorer | Project NOMAD" />
+      <Head title={t('explorer.head_title')} />
       <div className="xl:pl-72 w-full">
         <main className="px-12 py-6">
           <div className="flex justify-between items-center">
             <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold mb-2">Content Explorer</h1>
-              <p className="text-text-muted">Browse and download content for offline reading!</p>
+              <h1 className="text-4xl font-semibold mb-2">{t('explorer.title')}</h1>
+              <p className="text-text-muted">{t('explorer.subtitle')}</p>
             </div>
           </div>
           {!isOnline && (
             <Alert
-              title="No internet connection. You may not be able to download files."
+              title={t('explorer.no_internet_warning')}
               message=""
               type="warning"
               variant="solid"
@@ -480,20 +462,20 @@ export default function ZimRemoteExplorer() {
           )}
           {!isInstalled && (
             <Alert
-              title="The Kiwix application is not installed. Please install it to view downloaded content files."
+              title={t('explorer.kiwix_not_installed')}
               type="warning"
               variant="solid"
               className="!mt-6"
             />
           )}
           <div className="mt-8 mb-6 flex items-center justify-between">
-            <StyledSectionHeader title="Curated Content" className="!mb-0" />
+            <StyledSectionHeader title={t('explorer.curated_content')} className="!mb-0" />
             <StyledButton
               onClick={() => refreshManifests.mutate()}
               disabled={refreshManifests.isPending || !isOnline}
               icon="IconRefresh"
             >
-              Force Refresh Collections
+              {t('explorer.force_refresh_collections')}
             </StyledButton>
           </div>
 
@@ -519,7 +501,7 @@ export default function ZimRemoteExplorer() {
             </div>
           ) : null}
 
-          {/* Creator Packs (hidden entirely when this build isn't configured) */}
+          {/* Creator Packs */}
           <CreatorPacksSection />
 
           {/* Tiered Category Collections */}
@@ -528,8 +510,8 @@ export default function ZimRemoteExplorer() {
               <IconBooks className="w-6 h-6 text-text-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-text-primary">Additional Content</h3>
-              <p className="text-sm text-text-muted">Curated collections for offline reference</p>
+              <h3 className="text-xl font-semibold text-text-primary">{t('explorer.additional_content')}</h3>
+              <p className="text-sm text-text-muted">{t('explorer.additional_content_desc')}</p>
             </div>
           </div>
           {categories && categories.length > 0 ? (
@@ -545,7 +527,6 @@ export default function ZimRemoteExplorer() {
                 ))}
               </div>
 
-              {/* Tier Selection Modal */}
               <TierSelectionModal
                 isOpen={tierModalOpen}
                 onClose={closeTierModal}
@@ -555,31 +536,31 @@ export default function ZimRemoteExplorer() {
               />
             </>
           ) : (
-            <p className="text-text-muted mt-4">No curated content categories available.</p>
+            <p className="text-text-muted mt-4">{t('explorer.no_curated_categories')}</p>
           )}
 
           {/* Kiwix Library / Custom Library Browser */}
           <div className="mt-12 mb-4 flex items-center justify-between">
-            <StyledSectionHeader title="Browse the Kiwix Library" className="!mb-0" />
+            <StyledSectionHeader title={t('explorer.browse_kiwix_library')} className="!mb-0" />
             <StyledButton
               onClick={() => setManageModalOpen(true)}
               disabled={!isOnline}
               icon="IconLibrary"
             >
-              {hasCustomLibraries ? 'Manage Custom Libraries' : 'Add Custom Library'}
+              {hasCustomLibraries ? t('explorer.manage_custom_libraries') : t('explorer.add_custom_library')}
             </StyledButton>
           </div>
 
           {/* Source selector dropdown */}
           {hasCustomLibraries && (
             <div className="flex items-center gap-3 mb-4">
-              <label className="text-sm font-medium text-text-secondary">Source:</label>
+              <label className="text-sm font-medium text-text-secondary">{t('explorer.source_label')}</label>
               <select
                 value={selectedSource === 'default' ? 'default' : String(selectedSource)}
                 onChange={(e) => handleSourceChange(e.target.value)}
                 className="rounded-md border border-border-default bg-surface-primary text-text-primary px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-desert-green"
               >
-                <option value="default">Default (Kiwix)</option>
+                <option value="default">{t('explorer.default_kiwix')}</option>
                 {customLibraries.map((lib) => (
                   <option key={lib.id} value={String(lib.id)}>
                     {lib.name}
@@ -596,7 +577,7 @@ export default function ZimRemoteExplorer() {
                 <Input
                   name="search"
                   label=""
-                  placeholder="Search available ZIM files..."
+                  placeholder={t('explorer.search_zim_placeholder')}
                   value={queryUI}
                   onChange={(e) => {
                     setQueryUI(e.target.value)
@@ -630,14 +611,14 @@ export default function ZimRemoteExplorer() {
                   {
                     accessor: 'updated',
                     render(record) {
-                      return new Intl.DateTimeFormat('en-US', {
+                      return new Intl.DateTimeFormat(i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US', {
                         dateStyle: 'medium',
                       }).format(new Date(record.updated))
                     },
                   },
                   {
                     accessor: 'size_bytes',
-                    title: 'Size',
+                    title: t('explorer.th_size'),
                     render(record) {
                       return formatBytes(record.size_bytes)
                     },
@@ -653,7 +634,7 @@ export default function ZimRemoteExplorer() {
                               confirmDownload(record)
                             }}
                           >
-                            Download
+                            {t('common:buttons.confirm', { defaultValue: 'Download' })}
                           </StyledButton>
                         </div>
                       )
@@ -670,31 +651,31 @@ export default function ZimRemoteExplorer() {
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
                           {record.author && (
                             <div>
-                              <span className="text-text-muted">Author: </span>
+                              <span className="text-text-muted">{t('explorer.details_author')}</span>
                               <span className="text-text-primary">{record.author}</span>
                             </div>
                           )}
                           {record.publisher && (
                             <div>
-                              <span className="text-text-muted">Publisher: </span>
+                              <span className="text-text-muted">{t('explorer.details_publisher')}</span>
                               <span className="text-text-primary">{record.publisher}</span>
                             </div>
                           )}
                           {record.language && (
                             <div>
-                              <span className="text-text-muted">Language: </span>
+                              <span className="text-text-muted">{t('explorer.details_language')}</span>
                               <span className="text-text-primary">{record.language}</span>
                             </div>
                           )}
                           {record.category && (
                             <div>
-                              <span className="text-text-muted">Category: </span>
+                              <span className="text-text-muted">{t('explorer.details_category')}</span>
                               <span className="text-text-primary">{record.category}</span>
                             </div>
                           )}
                           {record.article_count != null && record.article_count > 0 && (
                             <div>
-                              <span className="text-text-muted">Articles: </span>
+                              <span className="text-text-muted">{t('explorer.details_articles')}</span>
                               <span className="text-text-primary">
                                 {record.article_count.toLocaleString()}
                               </span>
@@ -702,7 +683,7 @@ export default function ZimRemoteExplorer() {
                           )}
                           {record.media_count != null && record.media_count > 0 && (
                             <div>
-                              <span className="text-text-muted">Media: </span>
+                              <span className="text-text-muted">{t('explorer.details_media')}</span>
                               <span className="text-text-primary">
                                 {record.media_count.toLocaleString()}
                               </span>
@@ -710,9 +691,9 @@ export default function ZimRemoteExplorer() {
                           )}
                           {hasValidIssuedDate && (
                             <div>
-                              <span className="text-text-muted">Issued: </span>
+                              <span className="text-text-muted">{t('explorer.details_issued')}</span>
                               <span className="text-text-primary">
-                                {new Intl.DateTimeFormat('en-US', {
+                                {new Intl.DateTimeFormat(i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US', {
                                   dateStyle: 'medium',
                                 }).format(issuedDate!)}
                               </span>
@@ -720,7 +701,7 @@ export default function ZimRemoteExplorer() {
                           )}
                           {record.size_bytes > 0 && (
                             <div>
-                              <span className="text-text-muted">Size: </span>
+                              <span className="text-text-muted">{t('explorer.details_size')}</span>
                               <span className="text-text-primary">{formatBytes(record.size_bytes)}</span>
                             </div>
                           )}
@@ -742,7 +723,7 @@ export default function ZimRemoteExplorer() {
                         )}
                         {record.file_name && (
                           <div className="mt-4">
-                            <span className="text-text-muted text-sm">File: </span>
+                            <span className="text-text-muted text-sm">{t('explorer.details_file')}</span>
                             <code className="text-xs text-text-muted">{record.file_name}</code>
                           </div>
                         )}
@@ -763,7 +744,6 @@ export default function ZimRemoteExplorer() {
           {/* Custom library directory browser */}
           {selectedSource !== 'default' && (
             <div className="mt-4">
-              {/* Breadcrumb navigation */}
               <nav className="flex items-center gap-1 text-sm text-text-muted mb-4 flex-wrap">
                 {breadcrumbs.map((crumb, idx) => (
                   <span key={idx} className="flex items-center gap-1">
@@ -790,8 +770,8 @@ export default function ZimRemoteExplorer() {
 
               {browseError && (
                 <Alert
-                  title="Could not fetch directory listing from this URL."
-                  message="The server may not support directory browsing, or the URL may be incorrect."
+                  title={t('explorer.directory_fetch_error_title')}
+                  message={t('explorer.directory_fetch_error_msg')}
                   type="error"
                   variant="solid"
                 />
@@ -801,14 +781,14 @@ export default function ZimRemoteExplorer() {
                 <div className="bg-surface-primary rounded-lg border border-border-subtle overflow-hidden relative" style={{ maxHeight: '600px', overflowY: 'auto' }}>
                   {browseData.directories.length === 0 && browseData.files.length === 0 ? (
                     <p className="text-text-muted p-6 text-center">
-                      No directories or ZIM files found at this location.
+                      {t('explorer.no_items_found_location')}
                     </p>
                   ) : (
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border-subtle bg-surface-secondary sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-medium text-text-secondary">Name</th>
-                          <th className="text-right px-4 py-3 font-medium text-text-secondary w-32">Size</th>
+                          <th className="text-left px-4 py-3 font-medium text-text-secondary">{t('explorer.th_name')}</th>
+                          <th className="text-right px-4 py-3 font-medium text-text-secondary w-32">{t('explorer.th_size')}</th>
                           <th className="text-right px-4 py-3 font-medium text-text-secondary w-36"></th>
                         </tr>
                       </thead>
@@ -850,7 +830,7 @@ export default function ZimRemoteExplorer() {
                                 icon="IconDownload"
                                 onClick={() => confirmCustomDownload(file)}
                               >
-                                Download
+                                {t('common:buttons.confirm', { defaultValue: 'Download' })}
                               </StyledButton>
                             </td>
                           </tr>
@@ -866,18 +846,17 @@ export default function ZimRemoteExplorer() {
 
           {/* Manage Custom Libraries Modal */}
           <StyledModal
-            title="Manage Custom Libraries"
+            title={t('explorer.modal_manage_title')}
             open={manageModalOpen}
             onCancel={() => setManageModalOpen(false)}
-            cancelText="Close"
+            cancelText={t('common:buttons.close', { defaultValue: 'Close' })}
           >
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-text-muted mb-4">
-                  Add Kiwix mirrors or other ZIM file sources for faster downloads.
+                  {t('explorer.modal_manage_desc')}
                 </p>
 
-                {/* Existing libraries */}
                 {customLibraries && customLibraries.length > 0 && (
                   <div className="space-y-2 mb-6">
                     {customLibraries.map((lib) => (
@@ -889,7 +868,7 @@ export default function ZimRemoteExplorer() {
                           <p className="font-medium text-text-primary truncate">
                             {lib.name}
                             {lib.is_default && (
-                              <span className="ml-2 text-xs text-text-muted font-normal">(built-in)</span>
+                              <span className="ml-2 text-xs text-text-muted font-normal">{t('explorer.builtin_tag')}</span>
                             )}
                           </p>
                           <p className="text-xs text-text-muted truncate">{lib.base_url}</p>
@@ -898,7 +877,7 @@ export default function ZimRemoteExplorer() {
                           <button
                             onClick={() => removeLibraryMutation.mutate(lib.id)}
                             className="ml-3 p-1.5 text-text-muted hover:text-red-500 transition-colors rounded"
-                            title="Remove library"
+                            title={t('explorer.remove_library_title')}
                           >
                             <IconTrash className="w-4 h-4" />
                           </button>
@@ -908,19 +887,18 @@ export default function ZimRemoteExplorer() {
                   </div>
                 )}
 
-                {/* Add new library form */}
                 <div className="space-y-3">
                   <Input
                     name="library-name"
-                    label="Library Name"
-                    placeholder="e.g., Debian Mirror"
+                    label={t('explorer.field_library_name')}
+                    placeholder={t('explorer.field_library_name_ph')}
                     value={newLibraryName}
                     onChange={(e) => setNewLibraryName(e.target.value)}
                   />
                   <Input
                     name="library-url"
-                    label="Base URL"
-                    placeholder="e.g., https://cdimage.debian.org/mirror/kiwix.org/zim/"
+                    label={t('explorer.field_base_url')}
+                    placeholder={t('explorer.field_base_url_ph')}
                     value={newLibraryUrl}
                     onChange={(e) => setNewLibraryUrl(e.target.value)}
                   />
@@ -933,7 +911,7 @@ export default function ZimRemoteExplorer() {
                       addLibraryMutation.isPending
                     }
                   >
-                    Add Library
+                    {t('explorer.btn_add_library')}
                   </StyledButton>
                 </div>
               </div>
